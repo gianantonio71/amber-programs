@@ -1,0 +1,2 @@
+../../../../../amber-stdlib/prelude.ar
+main.ar

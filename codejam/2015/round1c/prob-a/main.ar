@@ -1,0 +1,43 @@
+
+Int solve(Int r, Int c, Int w) = (c / w) * r + w - (if mod(c, w) == 0 then 1 else 0);
+
+
+Main([String] args)
+{
+  if (length(args) /= 2)
+    Print("Usage: <program name> <input file> <output file>\n");
+    return;
+  ;
+
+  read_res = FileRead(args[0]);
+  if (read_res == nil)
+    Print("Unable to read file: " & args[0] & "\n");
+    return;
+  ;
+  input = value(read_res);
+
+  lines = [string(l) : l <- split_lines(input)];
+
+  test_cases = to_int(lines[0]);
+
+  lc = 1;
+  for (i_t < test_cases)
+    // Reading the inputs
+    fields = split(lines[lc]);
+    lc = lc + 1;
+
+    r = to_int(fields[0]);
+    c = to_int(fields[1]);
+    w = to_int(fields[2]);
+
+    // Solving the test case
+    res = solve(r, c, w);
+
+    res_str = to_str(res);
+
+    // Writing the results
+    out_line = "Case #" & to_str(i_t + 1) & ": " & res_str & "\n";
+    FileWrite(args[1], i_t > 0, _obj_(out_line));
+    Print(out_line);
+  ;
+}
