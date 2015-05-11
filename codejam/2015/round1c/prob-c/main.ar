@@ -1,0 +1,61 @@
+
+Int solve(Int c, Int d, Int v, [Int] ds)
+{
+  ds_idx = 0;
+  first_hole = 1;
+  new_den_count = 0;
+  loop
+    while (ds_idx < d and ds[ds_idx] <= first_hole)
+      first_hole = first_hole + ds[ds_idx] * c;
+      ds_idx = ds_idx + 1;
+    ;
+    return new_den_count if first_hole > v;
+    first_hole = first_hole * (1 + c);
+    new_den_count = new_den_count + 1;
+  ;
+}
+
+
+Main([String] args)
+{
+  if (length(args) /= 2)
+    Print("Usage: <program name> <input file> <output file>\n");
+    return;
+  ;
+
+  read_res = FileRead(args[0]);
+  if (read_res == nil)
+    Print("Unable to read file: " & args[0] & "\n");
+    return;
+  ;
+  input = value(read_res);
+
+  lines = [string(l) : l <- split_lines(input)];
+
+  test_cases = to_int(lines[0]);
+
+  lc = 1;
+  for (i_t < test_cases)
+    // Reading the inputs
+    lfs = [
+      split(lines[lc]),
+      split(lines[lc+1])
+    ];
+    lc = lc + 2;
+
+    c = to_int(lfs[0][0]);
+    d = to_int(lfs[0][1]);
+    v = to_int(lfs[0][2]);
+    ds = [to_int(f) : f <- lfs[1]];
+
+    // Solving the test case
+    res = solve(c, d, v, ds);
+
+    res_str = to_str(res);
+
+    // Writing the results
+    out_line = "Case #" & to_str(i_t + 1) & ": " & res_str & "\n";
+    FileWrite(args[1], i_t > 0, _obj_(out_line));
+    Print(out_line);
+  ;
+}
