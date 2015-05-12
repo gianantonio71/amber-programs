@@ -1,0 +1,133 @@
+Int pow(Int base, Nat exp)
+{
+  pow = 1;
+  for (exp)
+    pow = base * pow;
+  ;
+  return pow;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+[[0..9]^] digits(Nat n)
+{
+  ds = [];
+  m = n;
+  while (m > 0)
+    ds = [ds | mod(m, 10)];
+    m = m / 10;
+  ;
+  return if ds == [] then [0] else nonempty(reverse(ds));
+}
+
+
+Nat number([[0..9]^] ds)
+{
+  num = 0;
+  pow = 1;
+  for (d : reverse(ds))
+    num = num + d * pow;
+    pow = 10 * pow;
+  ;
+  return num;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+Nat min_steps_to_num_of_digits(NzNat nd)
+{
+  return 1 if nd == 1;
+  return 10 if nd == 2;
+  return min_steps_to_num_of_digits(nd-1) + 1 + number((nd/2) * [9]) + number(((nd-1)/2) * [9]);
+}
+
+
+Int solve(NzNat n)
+{
+  return n if n < 10;
+
+  ds = digits(n);
+  nd = length(ds);
+
+  // Let's first get to 10^(nd-1)
+  steps = min_steps_to_num_of_digits(nd);
+
+  left = subseq(ds, 0, nd/2);
+  right = right_subseq(ds, nd/2);
+
+  // If the left half of the digit string is already what it needs to be, that is,
+  // it is in the form 10*, then we just return the number of steps required to
+  // get to the right part of the string
+  return steps + number(right) if left == [1] & (nd / 2 - 1) * [0];
+
+  // If the right part of the string of digits is all 0, then I cannot employ
+  // the "standard" strategy (Take N=20 for example. The standard strategy
+  // would be: 10 -> 11 -> 12 -> 21 and I would end up overshooting the target).
+  // But every number whose least significant digit is 0 can only be reached
+  // from below and with an increment, so I just calculate the number of steps
+  // needed to reach the previous number and add one.
+  return 1 + solve(n-1) if all([d == 0 : d <- right]);
+
+  return steps + number(reverse(left)) + number(right);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+[Nat] ref_solve(NzNat n)
+{
+  steps = [1] & ((n-1) * [n+1]);
+  curr_pos = {1};
+  curr_steps = 1;
+  while (curr_pos /= {})
+    curr_steps = curr_steps + 1;
+    new_pos = union({{m + 1, flip(m)} : m <- curr_pos});
+    new_pos = {p : p <- new_pos, p <= n, steps[p-1] > curr_steps};
+    for (p : rand_sort(new_pos))
+      steps[p-1] := curr_steps;
+    ;
+    curr_pos = new_pos;
+  ;
+  return steps;
+
+  Int flip(Nat n) = number(reverse(digits(n)));
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+Main([String] args)
+{
+  if (length(args) /= 2)
+    Print("Usage: <program name> <input file> <output file>\n");
+    return;
+  ;
+
+  read_res = FileRead(args[0]);
+  if (read_res == nil)
+    Print("Unable to read file: " & args[0] & "\n");
+    return;
+  ;
+  input = value(read_res);
+
+  lines = [string(l) : l <- split_lines(input)];
+
+  test_cases = to_int(lines[0]);
+
+  lc = 1;
+  for (i_t < test_cases)
+    // Reading the inputs
+    fs = split(lines[lc]);
+    lc = lc + 1;
+
+    n = nz_nat(to_int(fs[0]));
+
+    // Solving the test case
+    res = solve(n);
+
+    res_str = to_str(res);
+
+    // Writing the results
+    out_line = "Case #" & to_str(i_t + 1) & ": " & res_str & "\n";
+    FileWrite(args[1], i_t > 0, _obj_(out_line));
+    Print(out_line);
+  ;
+}
